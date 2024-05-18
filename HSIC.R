@@ -6,15 +6,15 @@ LinKer <- function(X1,X2){
   t(X1)%*%X2
 } # Definition of Linear Kernel
 
-Kernels <- function(type,){ # A function which i can use to define a desired kernel
+Kernels <- function(type){ # A function which i can use to define a desired kernel
   switch (type,
-    gaussian = { #Defines for the Gaussian kernel
+    Gaussian = { #Defines for the Gaussian kernel
       function(X1,X2,sigma){
         exp(-sum(X1-X2)^2/(2*sigma^2))
       }
     },
-    linear = {
-      function(X1,X2){ #Defines for the Linear kernel
+    Linear = {
+      function(X1,X2, sigma){ #Defines for the Linear kernel
         t(X1)%*%X2
       }
     },
@@ -34,6 +34,54 @@ kernelMatrix <- function(X, type, ...){ # Function that creates Kernel Matrices.
   }
   return(K)
 }
+
+sigma_tilde <- function(x){
+  min(sd(x,na.rm = T),IQR(x,na.rm = T)/1.34)
+}
+
+Bandwith <- function(bType){ # a bandwith function
+  if (is.numeric(bType)) {
+    function(X){
+      return(bType) # Returns a number if number is used as a input
+    }
+  } else {
+    function(X){
+      median(dist(X, method = "euclidian")) # defines function for Calculating midean euclidian distance
+    }
+  }
+}
+
+HSIC_b <- function(X,Y, # Our data
+                   typeX,typeY, # The kernel for corresponding RKHS
+                   BandX = "Median", # Bandwidth variables
+                   BandY = "Median" # can either be median or numbers
+                   ){
+  n <- nrow(X)
+  if (typeX=="Gaussian") {
+      sigfunc <- Bandwith(BandX)
+      sigx <- sigfunc(X)
+      K <- kernelMatrix(X,typeX,sigx)
+  } else {
+    K <- kernelMatrix(X,typeX)
+  }
+  if (typeY=="Gaussian"){
+    sigfunc <- Bandwith(BandY)
+    sigy <- sigfunc(Y)
+    L <- kernelMatrix(Y,typeY,sigy)
+  } else {
+    L <- kernelMatrix(Y,typeY)
+  }
+  H <- diag(x=1, nrow = n,ncol = n) - matrix(1/n,nrow = n ,ncol = n)
+  return(sum(K%*%H%*%L%*%H)/(n^2))
+}
+
+HSIC_b(X,Y, "Gaussian","Gaussian")
+
+HSIC_b(X,Y,"Gaussian","Linear",bTypeX = "Median")
+
+test2 <- Bandwith("Silverman")
+
+test2(Z[,c(1,2)])
 
 dim(kernelMatrix(Z[,c(1,2)],"linear"))
 kernelMatrix(Z[,c(1,2)],"gaussian",sigma=2)
