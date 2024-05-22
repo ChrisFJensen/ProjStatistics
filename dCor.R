@@ -20,3 +20,4 @@ dist_cov <- function(X,Y){
   }
   return(mean(A*B))
 }
+

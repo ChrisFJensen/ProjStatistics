@@ -105,10 +105,10 @@ HSIC_perm <- function(X,Y, # Our data
         L_star[j,i] <- L_star[i,j]
       }
     }
-    HSIC_permed[k]<- mean(K%*%H%*%L_star%*%H)
+    HSIC_permed[k]<- sum(diag(K%*%H%*%L_star%*%H))/(n^2)
   }
   p_tilde <- (1+length(which(HSIC_permed>HSIC_std)))/(p)
   return(p_tilde)
 }
 
-HSIC_perm(X,Y,typeX = "Linear", BandY = 4, p=100)
+HSIC_perm(X,Y,typeX = "Linear", typeY = "Linear", p=100)
