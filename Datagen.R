@@ -22,3 +22,12 @@ M2_dat_gen <- function(n,rho){
 M3_dat_gen <- function(n,a){
   
 }
+
+Gauss_univariate <- function(n, rho=0.5){
+  Z <- mvrnorm(n=n,mu=c(0,0),Sigma = matrix(c(1,rho,rho,1),nrow = 2))
+  X <- Z[,1]
+  Y <- Z[,2]
+  return(data.frame("X"=X,"Y"=Y))
+}
+
+Gauss_univariate(100,0)
