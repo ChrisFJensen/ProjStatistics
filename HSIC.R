@@ -100,7 +100,7 @@ HSIC_perm <- function(X,Y, # Our data
     permutation <- sample(n)
     L_star <- matrix(NA, nrow = n,ncol = n)
     for (i in 1:n) {
-      for (j in 1:n) {
+      for (j in i:n) {
         L_star[i,j] <- L[permutation[i],permutation[j]]
         L_star[j,i] <- L_star[i,j]
       }
@@ -111,4 +111,3 @@ HSIC_perm <- function(X,Y, # Our data
   return(p_tilde)
 }
 
-HSIC_perm(X,Y,typeX = "Linear", typeY = "Linear", p=100)

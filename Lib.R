@@ -5,4 +5,3 @@ library(dplyr)
 library(MASS)
 library(energy)
 
-getwd()

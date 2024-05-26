@@ -1,5 +1,4 @@
 
-
 dist_cov <- function(X,Y){
   n <- nrow(X)
   A_eu <- dist(X, method = "euclidean") |> as.matrix()
