@@ -20,8 +20,29 @@ M2_dat_gen <- function(n,rho){
 }
 
 M3_dat_gen <- function(n,a){
-  
+  X_1 <- data.frame("X"=NA)[-1,]
+  Y_1 <- data.frame("Y"=NA)[-1,]
+  for (i in 1:n) {
+    j <- 0
+    while (j < 1) {
+      u <- runif(1, min = 0, max = 1/(2*pi^2))
+      x1 <- runif(1,min = -pi,max = pi)
+      y1 <- runif(1,min = -pi,max = pi)
+      fxy <- (1+sin(a*x1)*sin(a*y1))/(4*pi^2)
+      if (u <= fxy) {
+        X_1 <- rbind(X_1,x1)
+        Y_1 <- rbind(Y_1,y1)
+        j <- 2
+      }
+    }
+  }
+  X_2 <- runif(n)
+  Y_2 <- runif(n)
+  data <- data.frame("X1"=X_1,"X2" = X_2, "Y1" = Y_1, "Y2" = Y_2, row.names = NULL)
+  return(data)
 }
+
+A <- M3_dat_gen(100,0)
 
 Gauss_univariate <- function(n, rho=0.5){
   Z <- mvrnorm(n=n,mu=c(0,0),Sigma = matrix(c(1,rho,rho,1),nrow = 2))
