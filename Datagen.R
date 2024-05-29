@@ -8,8 +8,6 @@ M1_dat_gen <- function(n,A){
   data <- data.frame(cbind(X_1,X_2),cbind(Y_1,Y_2))
 }
 
-print(M1_dat_gen(100,2))
-
 M2_dat_gen <- function(n,rho){
   X_1 <- runif(n,-1,1)
   epsilon <- rnorm(n)
@@ -42,8 +40,6 @@ M3_dat_gen <- function(n,a){
   return(data)
 }
 
-A <- M3_dat_gen(100,0)
-
 Gauss_univariate <- function(n, rho=0.5){
   Z <- mvrnorm(n=n,mu=c(0,0),Sigma = matrix(c(1,rho,rho,1),nrow = 2))
   X <- Z[,1]
@@ -51,4 +47,17 @@ Gauss_univariate <- function(n, rho=0.5){
   return(data.frame("X"=X,"Y"=Y))
 }
 
-Gauss_univariate(100,0)
+Gauss_multivariate <- function(n,rho = 0.5,StnR = 1, p = 2, q=2){
+  d <- p+q
+  I <- sample(p,size = StnR)
+  Matrix1 <- diag(1,nrow = p)
+  Matrix2 <- matrix(data = 0, nrow = p, ncol = q)
+  Matrix2[I,] <- rho
+  Matrix3 <- t(Matrix2)
+  Matrix4 <- diag(1,nrow = q)
+  CovMatrix <- rbind(cbind(Matrix1,Matrix2),cbind(Matrix3,Matrix4))
+  Z <- mvrnorm(n=n, mu=numeric(d),Sigma = CovMatrix)
+  X <- Z[,1:p]
+  Y <- Z[,(p+1):d]
+  return(data.frame("X"=X,"Y"=Y))
+}
