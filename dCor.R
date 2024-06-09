@@ -20,3 +20,26 @@ dist_cov <- function(X,Y){
   return(mean(A*B))
 }
 
+dist_cor <- function(X,Y){
+  VX <- dist_cov(X,X)
+  VY <- dist_cov(Y,Y)
+  if (VX*VY!=0) {
+    VXY <- dist_cov(X,Y)
+    RXY <- VXY/sqrt(VX*VY)
+    return(sqrt(RXY))
+  } else {
+    0
+  }
+}
+
+
+dCor_perm <- function(X,Y, # Our data
+                      p=100 # Number of permutations
+){
+  n <- nrow(X)
+  dCor_std <- dist_cor(X,Y)
+  dCor_permed <- numeric((p-1))
+
+  p_tilde <- (1+length(which(dCor_permed>dCor_std)))/(p)
+  return(p_tilde)
+}

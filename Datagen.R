@@ -47,17 +47,51 @@ Gauss_univariate <- function(n, rho=0.5){
   return(data.frame("X"=X,"Y"=Y))
 }
 
-Gauss_multivariate <- function(n,rho = 0.5,StnR = 1, p = 2, q=2){
-  d <- p+q
+Gauss_multivariate <- function(n,rho = 0.5,StnR = 1, p = 2){
+  d <- 2*p
   I <- sample(p,size = StnR)
   Matrix1 <- diag(1,nrow = p)
-  Matrix2 <- matrix(data = 0, nrow = p, ncol = q)
+  Matrix2 <- matrix(data = 0, nrow = p, ncol = p)
   Matrix2[I,] <- rho
   Matrix3 <- t(Matrix2)
-  Matrix4 <- diag(1,nrow = q)
+  Matrix4 <- diag(1,nrow = p)
+  CovMatrix <- rbind(cbind(Matrix1,Matrix2),cbind(Matrix3,Matrix4))
+  CovMatrix <- nearPD(CovMatrix,corr = TRUE)$mat
+  Z <- mvrnorm(n=n, mu=numeric(d),Sigma = CovMatrix)
+  X <- Z[,1:p]
+  Y <- Z[,(p+1):d]
+  return(data.frame("X"=X,"Y"=Y))
+}
+
+Gauss_multivariate_2 <- function(n,rho = 0.5,StnR = 1, p = 2){
+  d <- 2*p
+  I <- sample(p,size = StnR)
+  Matrix1 <- diag(1,nrow = p)
+  Matrix2 <- matrix(data = 0, nrow = p, ncol = p)
+  Matrix2[I,] <- rho
+  Matrix3 <- t(Matrix2)
+  Matrix4 <- diag(1,nrow = p)
   CovMatrix <- rbind(cbind(Matrix1,Matrix2),cbind(Matrix3,Matrix4))
   Z <- mvrnorm(n=n, mu=numeric(d),Sigma = CovMatrix)
   X <- Z[,1:p]
   Y <- Z[,(p+1):d]
   return(data.frame("X"=X,"Y"=Y))
 }
+
+
+Matrixtest <- function(rho = 0.5,StnR = 1, p = 2){
+  d <- 2*p
+  I <- sample(p,size = StnR*p)
+  Matrix1 <- diag(1,nrow = p)
+  Matrix2 <- matrix(data = 0, nrow = p, ncol = p)
+  Matrix2[I,] <- rho
+  Matrix3 <- t(Matrix2)
+  Matrix4 <- diag(1,nrow = p)
+  CovMatrix <- rbind(cbind(Matrix1,Matrix2),cbind(Matrix3,Matrix4))
+  return(CovMatrix)
+}
+
+CM <- Matrixtest(0.5,0.1,10)
+
+A <- Gauss_multivariate(100,p=4)
+

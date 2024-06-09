@@ -21,7 +21,9 @@ Calibration_plots <- function(datatype, rho,
         Y <- Z[,c(3,4)]
       },
       M3 = {
-        stop("Not yet implemented")
+        Z <- M3_dat_gen(ss,rho)
+        X <- Z[,c(1,2)]
+        Y <- Z[,c(3,4)]
       },
       Gauss = {
         Z <- Gauss_univariate(ss,rho)
@@ -145,7 +147,10 @@ Power_plots_ld <- function(datatype, rho,
                d <- 4
              },
              M3 = {
-               stop("Not yet implemented")
+               Z <- M3_dat_gen(ss,r)
+               X <- Z[,c(1,2)]
+               Y <- Z[,c(3,4)]
+               d <- 4
              },
              Gauss = {
                Z <- Gauss_univariate(ss,r)
@@ -178,6 +183,102 @@ Power_plots_ld <- function(datatype, rho,
     DF2 <- DF1[order(DF1$inta),-1]
     DF2$power <- DFT1E$power
     type1_rej_rate <- rbind(type1_rej_rate,DF2)
+  return(type1_rej_rate)
+}
+
+Power_plots_dim <- function(rho,
+                            StnR, dims,
+                           sampleS = 200,
+                           Permutations = 200,
+                           reps=100,
+                           BW = c(0.25,0.5,0.75,1),
+                           level = 0.05){
+  P_val_df <- data.frame("Pval"=NA,"rho" = NA,"d"=NA,"I"=NA, "Estimator"=NA)[-1,]
+  set.seed(2309)
+  n <- sampleS
+  perm <- Permutations
+  for (it in 1:reps) {
+    for (p in dims) {
+      d <- 2*p
+      for (r in rho) {
+        for (I in StnR) {
+          Z <- Gauss_multivariate(n, rho = r, StnR = I, p=p)
+          X <- Z[,1:p]
+          Y <- Z[,(p+1):d]
+      Pval1 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[1] , B=perm)$p.value
+      P1 <- data.frame("Pval"=Pval1,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[1]))
+      Pval2 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[2] , B=perm)$p.value
+      P2 <- data.frame("Pval"=Pval2,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[2]))
+      Pval3 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[3] , B=perm)$p.value
+      P3 <- data.frame("Pval"=Pval3,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[3]))
+      Pval4 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[4] , B=perm)$p.value
+      P4 <- data.frame("Pval"=Pval4,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[4]))
+      Pval5 <- dhsic.test(X,Y,kernel = "gaussian", B=perm)$p.value
+      P5 <- data.frame("Pval"=Pval5,"rho"=r,"d"=d,"I"=I,"Estimator"="median")
+      Pval6 <- dhsic.test(X,Y,kernel = "LinKer", B=perm)$p.value
+      P6 <- data.frame("Pval"=Pval6,"rho"=r,"d"=d,"I"=I,"Estimator"="linear")
+      Pval7 <- dcor.test(X,Y,R=perm)$p.value
+      P7 <- data.frame("Pval"=Pval7,"rho"=r,"d"=d,"I"=I,"Estimator"="dCor")
+      P_val_df <- rbind(P_val_df,P1,P2,P3,P4,P5,P6,P7)
+      }
+      }
+    }
+  }
+  P_val_df$inta <- interaction(P_val_df$rho,P_val_df$d,P_val_df$I ,P_val_df$Estimator)
+  type1_rej_rate <- data.frame("rho"= NA,"d"=NA,"I"=NA, "Estimator" = NA, "inta" = NA,"power" = NA)[-1,]
+  DF1 <- P_val_df |> group_by(inta) |> filter(row_number()==1)
+  DFT1E <- P_val_df |> group_by(inta) |> summarise(power = mean(Pval <= level))
+  DF2 <- DF1[order(DF1$inta),-1]
+  DF2$power <- DFT1E$power
+  type1_rej_rate <- rbind(type1_rej_rate,DF2)
+  return(type1_rej_rate)
+}
+
+Power_plots_dim_2 <- function(rho,
+                            StnR, dims,
+                            sampleS = 200,
+                            Permutations = 200,
+                            reps=100,
+                            BW = c(0.25,0.5,0.75,1),
+                            level = 0.05){
+  P_val_df <- data.frame("Pval"=NA,"rho" = NA,"d"=NA,"I"=NA, "Estimator"=NA)[-1,]
+  set.seed(2309)
+  n <- sampleS
+  perm <- Permutations
+  for (it in 1:reps) {
+    for (p in dims) {
+      d <- 2*p
+      for (r in rho) {
+        for (I in StnR) {
+          Z <- Gauss_multivariate_2(n, rho = r, StnR = I, p=p)
+          X <- Z[,1:p]
+          Y <- Z[,(p+1):d]
+          Pval1 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[1] , B=perm)$p.value
+          P1 <- data.frame("Pval"=Pval1,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[1]))
+          Pval2 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[2] , B=perm)$p.value
+          P2 <- data.frame("Pval"=Pval2,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[2]))
+          Pval3 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[3] , B=perm)$p.value
+          P3 <- data.frame("Pval"=Pval3,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[3]))
+          Pval4 <- dhsic.test(X,Y,kernel = "gaussian.fixed", bandwidth = d^BW[4] , B=perm)$p.value
+          P4 <- data.frame("Pval"=Pval4,"rho"=r,"d"=d,"I"=I,"Estimator"=as.character(BW[4]))
+          Pval5 <- dhsic.test(X,Y,kernel = "gaussian", B=perm)$p.value
+          P5 <- data.frame("Pval"=Pval5,"rho"=r,"d"=d,"I"=I,"Estimator"="median")
+          Pval6 <- dhsic.test(X,Y,kernel = "LinKer", B=perm)$p.value
+          P6 <- data.frame("Pval"=Pval6,"rho"=r,"d"=d,"I"=I,"Estimator"="linear")
+          Pval7 <- dcor.test(X,Y,R=perm)$p.value
+          P7 <- data.frame("Pval"=Pval7,"rho"=r,"d"=d,"I"=I,"Estimator"="dCor")
+          P_val_df <- rbind(P_val_df,P1,P2,P3,P4,P5,P6,P7)
+        }
+      }
+    }
+  }
+  P_val_df$inta <- interaction(P_val_df$rho,P_val_df$d,P_val_df$I ,P_val_df$Estimator)
+  type1_rej_rate <- data.frame("rho"= NA,"d"=NA,"I"=NA, "Estimator" = NA, "inta" = NA,"power" = NA)[-1,]
+  DF1 <- P_val_df |> group_by(inta) |> filter(row_number()==1)
+  DFT1E <- P_val_df |> group_by(inta) |> summarise(power = mean(Pval <= level))
+  DF2 <- DF1[order(DF1$inta),-1]
+  DF2$power <- DFT1E$power
+  type1_rej_rate <- rbind(type1_rej_rate,DF2)
   return(type1_rej_rate)
 }
 
